@@ -9,6 +9,8 @@ public class EquipmentSlot : MonoBehaviour
 
 	private DisableDropCondition disableDropCondition;
 
+	public bool HasItem { get; private set; } = false;
+	
 	protected virtual void Awake()
 	{
 		DropArea = GetComponent<DropArea>() ?? gameObject.AddComponent<DropArea>();
@@ -29,10 +31,13 @@ public class EquipmentSlot : MonoBehaviour
 
 	private void OnItemDropped(DraggableComponent draggable)
 	{
-		draggable.transform.position = transform.position;
+		var draggableTransform = draggable.transform;
+		draggableTransform.parent = transform;
+		draggableTransform.localPosition = Vector3.zero;
 		CurrentItem = draggable;
 		DropArea.DropConditions.Add(disableDropCondition);
 		draggable.OnBeginDragHandler += CurrentItemOnBeginDrag;
+		HasItem = true;
 	}
 
 	//Current item is being dragged so we listen for the EndDrag event
@@ -53,5 +58,6 @@ public class EquipmentSlot : MonoBehaviour
 		DropArea.DropConditions.Remove(disableDropCondition); //We dropped the component in another slot so we can remove the DisableDropCondition
 		CurrentItem.OnBeginDragHandler -= CurrentItemOnBeginDrag; //We make sure to remove this listener as the item is no longer in this slot
 		CurrentItem = null; //We no longer have an item in this slot, so we remove the refference
+		HasItem = false;
 	}
 }
